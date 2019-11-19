@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/textures">
+        <file>res/000001.jpg</file>
+        <file>res/000002.jpg</file>
+        <file>res/000003.jpg</file>
+        <file>res/000006.jpg</file>
+        <file>res/000005.jpg</file>
+        <file>res/mask1280x720.png</file>
+    </qresource>
+</RCC>

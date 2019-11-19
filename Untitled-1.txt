@@ -1,0 +1,121 @@
+#include "rgaProcess.h"
+#include "common.h"
+#include <sys/time.h>
+
+static RockchipRga *rkRga = new RockchipRga();
+ static   int srcWidth,srcHeight,srcFormat;
+static	int dstWidth,dstHeight,dstFormat;
+static	bo_t bo_src, bo_dst;
+ static rga_info_t src;
+ static   rga_info_t dst;
+    
+void rga_init()
+{
+    rkRga->RkRgaInit();
+
+    int ret = 0;
+
+
+    srcWidth = _image_width;
+    srcHeight = _image_height;
+	srcFormat = RK_FORMAT_YCrCb_420_SP;
+
+    dstWidth = _image_width;
+    dstHeight = _image_height;
+	dstFormat = RK_FORMAT_YCbCr_420_P;
+
+    ret = rkRga->RkRgaGetAllocBuffer(&bo_src, srcWidth, srcHeight, 32);
+	ret = rkRga->RkRgaGetAllocBuffer(&bo_dst, dstWidth, dstHeight, 32);
+
+	/********** map buffer_address to userspace **********/
+	rkRga->RkRgaGetMmap(&bo_src);
+	rkRga->RkRgaGetMmap(&bo_dst);
+
+   
+    memset(&src, 0, sizeof(rga_info_t));
+    src.fd = -1;
+    src.mmuFlag = 1;
+    // src.virAddr = psrc;
+    
+    memset(&dst, 0, sizeof(rga_info_t));
+    dst.fd = -1;
+    dst.mmuFlag = 1;
+    // dst.virAddr = pdst;
+
+    /********** get src_Fd **********/
+    ret = rkRga->RkRgaGetBufferFd(&bo_src, &src.fd);
+    printf("src.fd =%d \n",src.fd);
+    if (ret) {
+        printf("rgaGetsrcFd fail : %s\n", strerror(errno));
+    }
+    /********** get dst_Fd **********/
+    ret = rkRga->RkRgaGetBufferFd(&bo_dst, &dst.fd);
+    printf("dst.fd =%d \n",dst.fd);
+    if (ret) {
+        printf("rgaGetdstFd error : %s\n", strerror(errno));
+    }
+}
+
+void rga_deinit()
+{
+    delete rkRga;
+}
+
+int rga_convert(unsigned char* psrc, unsigned char* pdst)
+{
+    int ret=0;    
+            struct timeval tpend1, tpend2;
+    // long usec1 = 0;
+    // gettimeofday(&tpend1, NULL);
+    memcpy(bo_src.ptr, psrc, _image_width*_image_height*3/2);
+
+    rga_set_rect(&src.rect, 0,0,srcWidth,srcHeight,srcWidth/*stride*/,srcHeight,srcFormat);
+    rga_set_rect(&dst.rect, 0,0,dstWidth,dstHeight,dstWidth/*stride*/,dstHeight,dstFormat);
+    ret = rkRga->RkRgaBlit(&src, &dst, NULL);
+    if (ret) {
+        printf("rkRga->RkRgaBlit error : %s\n",strerror(errno));
+    }
+
+
+    //*pdst=(unsigned char *)bo_dst.ptr;
+    memcpy(pdst, (unsigned char *)bo_dst.ptr, _image_width*_image_height*3/2);
+
+    // gettimeofday(&tpend2, NULL);
+    // usec1 = 1000 * (tpend2.tv_sec - tpend1.tv_sec) + (tpend2.tv_usec - tpend1.tv_usec) / 1000;
+    // printf("cost_time=%ld ms\n", usec1);
+
+    // ret = rkRga->RkRgaFree(&bo_src);
+	// ret = rkRga->RkRgaFree(&bo_dst);
+
+    return ret;
+}
+
+/*
+int rga_zoom(unsigned char* src, unsigned char*dst, int zoom)
+{
+    
+    if(zoom == RGA_ZOOM_1x0){
+        dst = src;
+        return 0;
+    }
+
+    int ret = 0;
+    int imgWidth,imgHeight;
+    int imgCenterX,imgCenterY;
+    int x,y; //zoom x,y
+    int zoomWidth,zoomHeight;
+    int imgFormat;
+
+	bo_t bo_src, bo_zoom, bo_dst;
+
+    imgWidth = _image_width;
+    imgHeight = _image_height;
+    imgCenterX = _image_width / 2 -1;
+    imgCenterY = _image_height / 2 -1;
+    
+    zoomWidth
+
+    srcWidth = 1280;
+    srcHeight = 720;
+ 
+}*/
