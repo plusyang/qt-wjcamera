@@ -1,2 +1,2 @@
 # qt-wjcamera
-A camera stream test app base on rk3399 isp linux platform, use GPUImage-x and Qt5 etc. 
+A camera stream test app base on rk3399 isp linux platform, use GPUImage-x and Qt5 etc. The camera sensor needs select MIPI sensor, such as OV13850, OV2741. The camera driver can select CIFISP or RKISP and maybe need to implement it yourself.
